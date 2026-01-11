@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#9C27B0">
+    <title>Shopping Scanner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root { --primary: #9C27B0; --primary-dark: #7B1FA2; --background: #121212; --surface: #1E1E1E; --surface-light: #2C2C2C; --text-primary: #FFF; --text-secondary: #B0B0B0; --success: #4CAF50; --error: #F44336; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--background); color: var(--text-primary); padding-bottom: 70px; }
+        .header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); padding: 20px; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 12px rgba(156,39,176,0.3); }
+        .header h1 { font-size: 24px; font-weight: 600; display: flex; align-items: center; gap: 12px; }
+        .content { padding: 20px; max-width: 600px; margin: 0 auto; }
+        .scan-button { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border: none; padding: 20px; border-radius: 16px; color: white; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(156,39,176,0.4); display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; }
+        .scan-button:active { transform: scale(0.98); }
+        #scanner-container { position: relative; width: 100%; height: 400px; background: #000; border-radius: 16px; overflow: hidden; display: none; margin: 20px 0; }
+        #scanner-container video { width: 100%; height: 100%; object-fit: cover; }
+        .scanner-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 200px; border: 3px solid var(--primary); border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); }
+        .scanner-line { position: absolute; width: 100%; height: 2px; background: var(--primary); animation: scan 2s ease-in-out infinite; }
+        @keyframes scan { 0%, 100% { top: 0; } 50% { top: 100%; } }
+        .card { background: var(--surface); border-radius: 16px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .card-title { font-size: 18px; font-weight: 600; }
+        .card-subtitle { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
+        .product-item { display: flex; gap: 16px; align-items: center; padding: 16px; background: var(--surface); border-radius: 12px; margin-bottom: 12px; cursor: pointer; }
+        .product-item:active { transform: scale(0.98); background: var(--surface-light); }
+        .product-image { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: var(--surface-light); flex-shrink: 0; }
+        .product-info { flex: 1; min-width: 0; }
+        .product-name { font-weight: 600; margin-bottom: 4px; }
+        .product-barcode { color: var(--text-secondary); font-size: 12px; }
+        .delete-btn { background: var(--error); border: none; color: white; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .delete-btn:active { transform: scale(0.9); }
+        .list-item { display: flex; gap: 12px; align-items: center; padding: 16px; background: var(--surface); border-radius: 12px; margin-bottom: 12px; }
+        .list-item.completed { opacity: 0.5; }
+        .list-item.completed .list-item-text { text-decoration: line-through; }
+        .checkbox { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--primary); flex-shrink: 0; cursor: pointer; }
+        .checkbox.checked { background: var(--primary); position: relative; }
+        .checkbox.checked::after { content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 14px; }
+        .list-item-text { flex: 1; }
+        input { width: 100%; padding: 12px; background: var(--surface-light); border: 2px solid transparent; border-radius: 8px; color: var(--text-primary); font-size: 16px; }
+        input:focus { outline: none; border-color: var(--primary); }
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: var(--surface-light); color: var(--text-primary); }
+        .btn:active { transform: scale(0.98); }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); padding: 12px; display: flex; justify-content: space-around; box-shadow: 0 -4px 12px rgba(0,0,0,0.3); z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 16px; border-radius: 12px; cursor: pointer; color: var(--text-secondary); font-size: 12px; }
+        .nav-item.active { background: var(--primary); color: white; }
+        .nav-icon { width: 24px; height: 24px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--surface); border-radius: 16px; padding: 24px; max-width: 500px; width: 100%; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 20px; font-weight: 600; }
+        .close-btn { background: none; border: none; color: var(--text-secondary); font-size: 24px; cursor: pointer; }
+        .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 1001; display: none; max-width: 90%; }
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--error); }
+        .loading { text-align: center; padding: 40px; }
+        .spinner { border: 3px solid var(--surface-light); border-top: 3px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary); }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+        .sync-indicator { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); padding: 4px 8px; background: var(--surface-light); border-radius: 12px; }
+        .sync-indicator.syncing { color: var(--primary); }
+        .sync-indicator.syncing svg { animation: spin 1s linear infinite; }
+        .info-box { background: var(--surface-light); border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18l-2 13H5L3 3z"/><circle cx="9" cy="20" r="1"/><circle cx="16" cy="20" r="1"/></svg>Shopping Scanner</h1></div>
+    <div class="content">
+        <div id="scanner-view">
+            <button class="scan-button" onclick="startScanning()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>Start Scanning</button>
+            <div id="scanner-container"><div class="scanner-overlay"><div class="scanner-line"></div></div></div>
+            <div id="recent-scans" class="card"><div class="card-header"><div class="card-title">Recent Scans</div></div><div id="recent-list"></div></div>
+        </div>
+        <div id="products-view" class="hidden">
+            <div class="card"><input type="text" id="search-products" placeholder="Search products..." oninput="searchProducts()"></div>
+            <div id="products-list"></div>
+        </div>
+        <div id="list-view" class="hidden">
+            <div class="card"><div class="card-header"><div class="card-title">Shopping List</div><div class="sync-indicator" id="sync-indicator"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg><span id="sync-text">Synced</span></div></div></div>
+            <div id="shopping-list"></div>
+        </div>
+        <div id="settings-view" class="hidden">
+            <div class="card"><div class="card-title">Home Assistant</div><div class="card-subtitle" style="margin-bottom:16px;">Connect to sync</div><div class="form-group"><label>HA URL</label><input type="text" id="ha-url" placeholder="http://homeassistant.local:8123"></div><div class="form-group"><label>Token</label><input type="password" id="ha-token" placeholder="Long-lived access token"></div><button class="btn btn-primary" onclick="saveSettings()">Save</button></div>
+            <div class="card"><div class="card-title">Sharing</div><div class="info-box"><strong>To share:</strong><br>1. Both use same HA URL & Token<br>2. Checks sync automatically<br>3. Refreshes every 30s<br>4. Access: http://YOUR_HA_IP:8123/local/shopping-scanner.html</div></div>
+            <div class="card"><div class="card-title">Stats</div><div class="card-subtitle" id="stats-text">Loading...</div></div>
+            <div class="card"><button class="btn btn-secondary" onclick="clearDatabase()">Clear Database</button></div>
+        </div>
+    </div>
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchView('scanner')"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></svg>Scan</div>
+        <div class="nav-item" onclick="switchView('products')"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-2a2 2 0 01-2-2V3m-4 0v2a2 2 0 01-2 2H8m12 6v6a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h12a2 2 0 012 2z"/></svg>Products</div>
+        <div class="nav-item" onclick="switchView('list')"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>List</div>
+        <div class="nav-item" onclick="switchView('settings')"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M21 12h-6m-6 0H3"/></svg>Settings</div>
+    </div>
+    <div id="add-product-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">Add Product</div><button class="close-btn" onclick="closeModal()">&times;</button></div><div class="form-group"><label>Name</label><input type="text" id="new-product-name" placeholder="Enter product name"></div><div class="form-group"><label>Barcode</label><input type="text" id="new-product-barcode" readonly></div><button class="btn btn-primary" onclick="saveNewProduct()">Add</button></div></div>
+    <div id="toast" class="toast"></div>
+    <script>
+let db,cfg={haUrl:'',haToken:''},scanning=!1,currentBarcode='',allProducts=[],syncInt=null;
+
+// Auto-configuration for Home Assistant Addon
+(function() {
+    const isAddon = window.location.hostname.includes('homeassistant') || 
+                    window.location.pathname.includes('api/hassio_ingress');
+    
+    if (isAddon) {
+        const token = '{{SUPERVISOR_TOKEN}}';
+        const url = '{{HA_URL}}';
+        
+        if (token && !token.includes('{{')) {
+            cfg.haUrl = url;
+            cfg.haToken = token;
+            localStorage.setItem('ha-config', JSON.stringify(cfg));
+            console.log('✅ Auto-configured for Home Assistant addon');
+        }
+    }
+})();function initDB(){const e=indexedDB.open('ShoppingScanner',1);e.onerror=()=>console.error('DB error'),e.onsuccess=e=>{db=e.target.result,loadSettings(),loadRecentScans(),loadProducts(),updateStats()},e.onupgradeneeded=e=>{db=e.target.result,db.objectStoreNames.contains('products')||db.createObjectStore('products',{keyPath:'barcode'});if(!db.objectStoreNames.contains('scans')){const e=db.createObjectStore('scans',{keyPath:'id',autoIncrement:!0});e.createIndex('timestamp','timestamp',{unique:!1})}}}
+function loadSettings(){const e=localStorage.getItem('ha-config');e&&(cfg=JSON.parse(e),document.getElementById('ha-url').value=cfg.haUrl,document.getElementById('ha-token').value=cfg.haToken)}function saveSettings(){cfg.haUrl=document.getElementById('ha-url').value.trim(),cfg.haToken=document.getElementById('ha-token').value.trim(),localStorage.setItem('ha-config',JSON.stringify(cfg)),showToast('Settings saved!','success')}
+function startScanning(){if(scanning)return void stopScanning();document.getElementById('scanner-container').style.display='block',document.querySelector('.scan-button').textContent='Stop Scanning',scanning=!0,Quagga.init({inputStream:{type:'LiveStream',target:document.querySelector('#scanner-container'),constraints:{width:{min:640,ideal:1280},height:{min:480,ideal:720},facingMode:'environment'}},decoder:{readers:['ean_reader','ean_8_reader','upc_reader','upc_e_reader']}},(e=>{e?(console.error(e),showToast('Camera denied','error'),stopScanning()):Quagga.start()})),Quagga.onDetected((e=>{scanning&&e.codeResult&&e.codeResult.code&&(handleBarcode(e.codeResult.code),stopScanning())}))}
+function stopScanning(){scanning&&(Quagga.stop(),scanning=!1,document.getElementById('scanner-container').style.display='none',document.querySelector('.scan-button').innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>Start Scanning')}
+async function handleBarcode(e){currentBarcode=e,showToast('Looking up...','success');const t=await getProduct(e);if(t)return await addToShoppingList(t.name),await recordScan(t),void loadRecentScans();try{const t=await fetch(`https://world.openfoodfacts.org/api/v0/product/${e}.json`),a=await t.json();if(1===a.status&&a.product&&a.product.product_name){const t={barcode:e,name:a.product.product_name,brand:a.product.brands||'',image:a.product.image_url||'',timestamp:Date.now()};await saveProduct(t),await addToShoppingList(t.name),await recordScan(t),loadRecentScans()}else showAddProductModal(e)}catch(t){console.error(t),showAddProductModal(e)}}
+async function addToShoppingList(e){if(!cfg.haUrl||!cfg.haToken)return void showToast('Configure HA','error');try{const t=await fetch(`${cfg.haUrl}/api/services/todo/add_item`,{method:'POST',headers:{Authorization:`Bearer ${cfg.haToken}`,'Content-Type':'application/json'},body:JSON.stringify({entity_id:'todo.shopping_list',item:e})});if(!t.ok)throw new Error('Failed');showToast(`Added: ${e}`,'success')}catch(e){console.error(e),showToast('HA Error','error')}}
+async function refreshShoppingList(){loadShoppingListV3()}async function loadShoppingListV3(){if(!cfg.haUrl||!cfg.haToken){document.getElementById('shopping-list').innerHTML='<div class="empty-state"><p>Configure HA in Settings</p></div>';return}const ind=document.getElementById('sync-indicator');ind.classList.add('syncing');document.getElementById('sync-text').textContent='Syncing...';const listDiv=document.getElementById('shopping-list');listDiv.innerHTML='<div class="loading"><div class="spinner"></div><p>Loading...</p></div>';try{const resp=await fetch(`${cfg.haUrl}/api/services/todo/get_items?return_response=true`,{method:'POST',headers:{Authorization:`Bearer ${cfg.haToken}`,'Content-Type':'application/json'},body:JSON.stringify({entity_id:['todo.shopping_list']})});if(!resp.ok){const errText=await resp.text();throw new Error(`${resp.status}: ${errText.substring(0,100)}`)}const data=await resp.json();const items=data.service_response?.['todo.shopping_list']?.items||[];displayShoppingList(items);ind.classList.remove('syncing');document.getElementById('sync-text').textContent='Synced'}catch(err){listDiv.innerHTML=`<div class="empty-state"><p>Error: ${err.message}</p></div>`;ind.classList.remove('syncing');document.getElementById('sync-text').textContent='Error'}}
+function displayShoppingList(e){const t=document.getElementById('shopping-list');const activeItems=e.filter(i=>i.status!=='completed');if(!activeItems||0===activeItems.length){t.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/><path d="M10 14l2 2 4-4"/></svg><p>Your shopping list is empty!</p></div>';return}t.innerHTML=activeItems.map((e=>`<div class="list-item"><div class="checkbox" onclick="toggleTodoItem('${e.uid}','${e.status}')"></div><div class="list-item-text">${e.summary}</div></div>`)).join('')}
+async function toggleItem(e,t){const a='completed'===t?'needs_action':'completed';try{const s=await fetch(`${cfg.haUrl}/api/services/todo/update_item`,{method:'POST',headers:{Authorization:`Bearer ${cfg.haToken}`,'Content-Type':'application/json'},body:JSON.stringify({entity_id:'todo.shopping_list',item:e,status:a})});s.ok&&refreshShoppingList()}catch(e){console.error(e)}}async function toggleItemOld(name,isComplete){try{const service=isComplete?'incomplete_item':'complete_item';const response=await fetch(`${cfg.haUrl}/api/services/shopping_list/${service}`,{method:'POST',headers:{Authorization:`Bearer ${cfg.haToken}`,'Content-Type':'application/json'},body:JSON.stringify({name:name})});response.ok&&refreshShoppingList()}catch(e){console.error(e)}}async function toggleTodoItem(uid,status){const newStatus=status==='completed'?'needs_action':'completed';try{const response=await fetch(`${cfg.haUrl}/api/services/todo/update_item`,{method:'POST',headers:{Authorization:`Bearer ${cfg.haToken}`,'Content-Type':'application/json'},body:JSON.stringify({entity_id:'todo.shopping_list',item:uid,status:newStatus})});response.ok&&refreshShoppingList()}catch(e){console.error(e)}}
+function saveProduct(e){return new Promise(((t,a)=>{const s=db.transaction(['products'],'readwrite').objectStore('products').put(e);s.onsuccess=()=>t(),s.onerror=()=>a()}))}function getProduct(e){return new Promise(((t,a)=>{const s=db.transaction(['products'],'readonly').objectStore('products').get(e);s.onsuccess=()=>t(s.result),s.onerror=()=>a()}))}function recordScan(e){return new Promise(((t,a)=>{const s=db.transaction(['scans'],'readwrite').objectStore('scans').add({...e,timestamp:Date.now()});s.onsuccess=()=>t(),s.onerror=()=>a()}))}
+function loadRecentScans(){const e=db.transaction(['scans'],'readonly').objectStore('scans').index('timestamp').openCursor(null,'prev'),t=[];e.onsuccess=e=>{const a=e.target.result;a&&t.length<5?(t.push(a.value),a.continue()):displayRecentScans(t)}}function displayRecentScans(e){const t=document.getElementById('recent-list');0===e.length?t.innerHTML='<p style="color:var(--text-secondary);">No recent scans</p>':t.innerHTML=e.map((e=>`<div class="product-item">${e.image?`<img src="${e.image}" class="product-image">`:'<div class="product-image"></div>'}<div class="product-info"><div class="product-name">${e.name}</div><div class="product-barcode">${e.barcode}</div></div></div>`)).join('')}
+function loadProducts(){const e=db.transaction(['products'],'readonly').objectStore('products').getAll();e.onsuccess=()=>{allProducts=e.result,displayProducts(e.result)}}function displayProducts(e){const t=document.getElementById('products-list');0===e.length?t.innerHTML='<div class="card"><p style="color:var(--text-secondary);">No products saved</p></div>':t.innerHTML=e.map((e=>`<div class="product-item" onclick="addProductToList('${e.barcode}')">${e.image?`<img src="${e.image}" class="product-image">`:'<div class="product-image"></div>'}<div class="product-info"><div class="product-name">${e.name}</div><div class="product-barcode">${e.barcode}${e.brand?' • '+e.brand:''}</div></div><button class="delete-btn" onclick="event.stopPropagation();deleteProduct('${e.barcode}')">✕</button></div>`)).join('')}
+async function addProductToList(e){const t=await getProduct(e);t&&(await addToShoppingList(t.name),await recordScan(t),loadRecentScans())}async function deleteProduct(e){if(confirm('Delete this product?')){const t=db.transaction(['products'],'readwrite');await t.objectStore('products').delete(e),showToast('Deleted','success'),loadProducts(),updateStats()}}function searchProducts(){const e=document.getElementById('search-products').value.toLowerCase(),t=allProducts.filter((t=>t.name.toLowerCase().includes(e)||t.barcode.includes(e)||t.brand&&t.brand.toLowerCase().includes(e)));displayProducts(t)}
+function showAddProductModal(e){document.getElementById('new-product-barcode').value=e,document.getElementById('new-product-name').value='',document.getElementById('add-product-modal').classList.add('active')}function closeModal(){document.getElementById('add-product-modal').classList.remove('active')}async function saveNewProduct(){const e=document.getElementById('new-product-name').value.trim(),t=document.getElementById('new-product-barcode').value;if(!e)return void showToast('Enter name','error');const a={barcode:t,name:e,brand:'',image:'',timestamp:Date.now()};await saveProduct(a),await addToShoppingList(e),await recordScan(a),closeModal(),loadRecentScans(),loadProducts()}
+function switchView(e){document.querySelectorAll('.nav-item').forEach((e=>e.classList.remove('active'))),event.currentTarget.classList.add('active'),document.getElementById('scanner-view').classList.add('hidden'),document.getElementById('products-view').classList.add('hidden'),document.getElementById('list-view').classList.add('hidden'),document.getElementById('settings-view').classList.add('hidden'),document.getElementById(`${e}-view`).classList.remove('hidden'),'products'===e&&loadProducts(),'list'===e&&(refreshShoppingList(),syncInt&&clearInterval(syncInt),syncInt=setInterval(refreshShoppingList,3e4)),'settings'===e&&updateStats(),('scanner'===e||'products'===e||'settings'===e)&&syncInt&&(clearInterval(syncInt),syncInt=null)}
+function updateStats(){const e=db.transaction(['products'],'readonly').objectStore('products').count(),t=db.transaction(['scans'],'readonly').objectStore('scans').count();e.onsuccess=()=>{t.onsuccess=()=>{document.getElementById('stats-text').textContent=`${e.result} products • ${t.result} scans`}}}function clearDatabase(){if(confirm('Delete all products?')){const e=db.transaction(['products','scans'],'readwrite');e.objectStore('products').clear(),e.objectStore('scans').clear(),showToast('Cleared','success'),loadRecentScans(),loadProducts(),updateStats()}}function showToast(e,t='success'){const a=document.getElementById('toast');a.textContent=e,a.className=`toast ${t}`,a.style.display='block',setTimeout((()=>{a.style.display='none'}),3e3)}initDB();
+    </script>
+</body>
+</html>

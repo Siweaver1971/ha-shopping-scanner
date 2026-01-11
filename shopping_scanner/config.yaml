@@ -1,0 +1,25 @@
+﻿name: Shopping Scanner
+version: "1.0.0"
+slug: shopping_scanner
+description: Barcode scanner for Home Assistant shopping lists with offline product database
+url: https://github.com/Siweaver1971/ha-shopping-scanner
+arch:
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
+  - i386
+startup: application
+boot: auto
+init: false
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:barcode-scan
+panel_title: Shopping Scanner
+ports:
+  8099/tcp: null
+options:
+  ssl: false
+schema:
+  ssl: bool
+image: ghcr.io/Siweaver1971/{arch}-addon-shopping-scanner

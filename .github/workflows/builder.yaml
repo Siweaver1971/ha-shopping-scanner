@@ -1,0 +1,21 @@
+﻿name: Builder
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: home-assistant/builder@master
+        with:
+          args: |
+            --all \
+            --target /data/shopping_scanner \
+            --docker-hub ghcr.io/${{ github.repository_owner }}
