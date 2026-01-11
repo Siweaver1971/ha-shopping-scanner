@@ -16,6 +16,6 @@ jobs:
       - uses: home-assistant/builder@master
         with:
           args: |
-            --all \
+            --amd64 --aarch64 --armhf --armv7 --i386 \
             --target /data/shopping_scanner \
             --docker-hub ghcr.io/${{ github.repository_owner }}
