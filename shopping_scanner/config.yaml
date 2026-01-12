@@ -6,7 +6,7 @@ url: https://github.com/Siweaver1971/ha-shopping-scanner
 arch:
   - amd64
   - aarch64
-  - armv7
+  - armhf
 startup: application
 boot: auto
 init: false
