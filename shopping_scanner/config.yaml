@@ -1,5 +1,5 @@
 name: Shopping Scanner
-version: "1.0.0"
+version: "1.0.1"
 slug: shopping_scanner
 description: Barcode scanner for Home Assistant shopping lists with offline product database
 url: https://github.com/Siweaver1971/ha-shopping-scanner
@@ -10,11 +10,11 @@ startup: application
 boot: auto
 init: false
 ingress: true
-ingress_port: 8099
+ingress_port: 8100
 panel_icon: mdi:barcode-scan
 panel_title: Shopping Scanner
 ports:
-  8099/tcp: null
+  8100/tcp: null
 options:
   ssl: false
 schema:
