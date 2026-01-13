@@ -1,4 +1,4 @@
-﻿name: Shopping Scanner
+name: Shopping Scanner
 version: "1.0.0"
 slug: shopping_scanner
 description: Barcode scanner for Home Assistant shopping lists with offline product database
