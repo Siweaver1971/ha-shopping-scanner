@@ -10,11 +10,11 @@ startup: application
 boot: auto
 init: false
 ingress: true
-ingress_port: 8765
+ingress_port: 9234
 panel_icon: mdi:barcode-scan
 panel_title: Shopping Scanner
 ports:
-  8765/tcp: null
+  9234/tcp: null
 options:
   ssl: false
 schema:
