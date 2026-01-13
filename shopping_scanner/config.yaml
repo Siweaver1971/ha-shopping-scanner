@@ -19,4 +19,4 @@ options:
   ssl: false
 schema:
   ssl: bool
-image: ghcr.io/Siweaver1971/{arch}-addon-shopping-scanner
+image: ghcr.io/siweaver1971/{arch}-addon-shopping-scanner
