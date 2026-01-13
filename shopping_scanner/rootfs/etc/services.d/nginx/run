@@ -1,10 +1,5 @@
 #!/usr/bin/with-contenv bashio
 bashio::log.info "Starting Shopping Scanner..."
-
-# Kill any existing nginx processes
-pkill nginx 2>/dev/null || true
-sleep 1
-
 SUPERVISOR_TOKEN="${SUPERVISOR_TOKEN}"
 HA_URL="http://supervisor/core"
 sed -i "s|{{SUPERVISOR_TOKEN}}|${SUPERVISOR_TOKEN}|g" /var/www/html/shopping-scanner.html
