@@ -1,4 +1,4 @@
-﻿#!/usr/bin/with-contenv bashio
+#!/usr/bin/with-contenv bashio
 bashio::log.info "Starting Shopping Scanner..."
 SUPERVISOR_TOKEN="${SUPERVISOR_TOKEN}"
 HA_URL="http://supervisor/core"
