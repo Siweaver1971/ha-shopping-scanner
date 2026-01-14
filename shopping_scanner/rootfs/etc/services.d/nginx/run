@@ -1,8 +1,0 @@
-#!/usr/bin/with-contenv bashio
-bashio::log.info "Starting Shopping Scanner..."
-SUPERVISOR_TOKEN="${SUPERVISOR_TOKEN}"
-HA_URL="http://supervisor/core"
-sed -i "s|{{SUPERVISOR_TOKEN}}|${SUPERVISOR_TOKEN}|g" /var/www/html/shopping-scanner.html
-sed -i "s|{{HA_URL}}|${HA_URL}|g" /var/www/html/shopping-scanner.html
-bashio::log.info "Starting nginx..."
-exec nginx -c /etc/nginx/nginx.conf

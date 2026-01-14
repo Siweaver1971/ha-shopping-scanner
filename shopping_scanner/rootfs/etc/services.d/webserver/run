@@ -1,0 +1,5 @@
+#!/usr/bin/with-contenv bashio
+bashio::log.info "Starting Shopping Scanner..."
+cd /var/www/html
+bashio::log.info "Starting web server on port 8099..."
+exec python3 -m http.server 8099
