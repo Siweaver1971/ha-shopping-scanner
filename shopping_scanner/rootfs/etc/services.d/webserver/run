@@ -1,7 +1,6 @@
 #!/usr/bin/with-contenv bashio
 bashio::log.info "Starting Shopping Scanner..."
 
-# Change to web directory first
 cd /var/www/html
 
 # Check if SUPERVISOR_TOKEN exists
@@ -11,17 +10,16 @@ else
     bashio::log.info "SUPERVISOR_TOKEN is available (length: ${#SUPERVISOR_TOKEN})"
 fi
 
-# Create a config.js file with the credentials instead of sed replacement
-cat > config.js << 'EOF'
+# Create config.js with ingress-compatible settings
+cat > config.js << EOF
 window.HA_CONFIG = {
-    haUrl: 'http://supervisor/core',
+    haUrl: '/api',
     haToken: '${SUPERVISOR_TOKEN}'
 };
 EOF
 
 bashio::log.info "Configuration written to config.js"
 
-# Verify the file was created
 if [ -f "config.js" ]; then
     bashio::log.info "config.js created successfully"
 else
