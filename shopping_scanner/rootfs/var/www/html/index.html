@@ -51,13 +51,13 @@
             box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
         }
 
-        .header h1 {
-            font-size: 24px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+            .header h1 {
+                font-size: 24px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
 
         .header-icon {
             width: 32px;
@@ -95,9 +95,9 @@
             gap: 12px;
         }
 
-        .scan-button:active {
-            transform: scale(0.98);
-        }
+            .scan-button:active {
+                transform: scale(0.98);
+            }
 
         #scanner-container {
             position: relative;
@@ -109,11 +109,11 @@
             display: none;
         }
 
-        #scanner-container video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+            #scanner-container video {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
 
         .scanner-overlay {
             position: absolute;
@@ -136,8 +136,13 @@
         }
 
         @keyframes scan {
-            0%, 100% { top: 0; }
-            50% { top: 100%; }
+            0%, 100% {
+                top: 0;
+            }
+
+            50% {
+                top: 100%;
+            }
         }
 
         /* Cards */
@@ -181,10 +186,10 @@
             position: relative;
         }
 
-        .product-item:active {
-            transform: scale(0.98);
-            background: var(--surface-light);
-        }
+            .product-item:active {
+                transform: scale(0.98);
+                background: var(--surface-light);
+            }
 
         .product-image {
             width: 60px;
@@ -224,9 +229,9 @@
             justify-content: center;
         }
 
-        .delete-btn:active {
-            transform: scale(0.9);
-        }
+            .delete-btn:active {
+                transform: scale(0.9);
+            }
 
         /* Shopping List Item */
         .list-item {
@@ -239,13 +244,13 @@
             margin-bottom: 12px;
         }
 
-        .list-item.completed {
-            opacity: 0.5;
-        }
+            .list-item.completed {
+                opacity: 0.5;
+            }
 
-        .list-item.completed .list-item-text {
-            text-decoration: line-through;
-        }
+                .list-item.completed .list-item-text {
+                    text-decoration: line-through;
+                }
 
         .checkbox {
             width: 24px;
@@ -257,20 +262,20 @@
             transition: all 0.3s ease;
         }
 
-        .checkbox.checked {
-            background: var(--primary);
-            position: relative;
-        }
+            .checkbox.checked {
+                background: var(--primary);
+                position: relative;
+            }
 
-        .checkbox.checked::after {
-            content: '✓';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 14px;
-        }
+                .checkbox.checked::after {
+                    content: '✓';
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    color: white;
+                    font-size: 14px;
+                }
 
         .list-item-text {
             flex: 1;
@@ -288,10 +293,10 @@
             transition: all 0.3s ease;
         }
 
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
+            input:focus, textarea:focus {
+                outline: none;
+                border-color: var(--primary);
+            }
 
         /* Buttons */
         .btn {
@@ -345,10 +350,10 @@
             font-size: 12px;
         }
 
-        .nav-item.active {
-            background: var(--primary);
-            color: white;
-        }
+            .nav-item.active {
+                background: var(--primary);
+                color: white;
+            }
 
         .nav-icon {
             width: 24px;
@@ -370,9 +375,9 @@
             padding: 20px;
         }
 
-        .modal.active {
-            display: flex;
-        }
+            .modal.active {
+                display: flex;
+            }
 
         .modal-content {
             background: var(--surface);
@@ -419,17 +424,17 @@
             max-width: 90%;
         }
 
-        .toast.success {
-            background: var(--success);
-        }
+            .toast.success {
+                background: var(--success);
+            }
 
-        .toast.error {
-            background: var(--error);
-        }
+            .toast.error {
+                background: var(--error);
+            }
 
-        .toast.warning {
-            background: var(--warning);
-        }
+            .toast.warning {
+                background: var(--warning);
+            }
 
         .loading {
             text-align: center;
@@ -447,8 +452,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .hidden {
@@ -459,12 +469,12 @@
             margin-bottom: 16px;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
+            .form-group label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 600;
+                color: var(--text-secondary);
+            }
 
         .empty-state {
             text-align: center;
@@ -472,12 +482,12 @@
             color: var(--text-secondary);
         }
 
-        .empty-state svg {
-            width: 64px;
-            height: 64px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
+            .empty-state svg {
+                width: 64px;
+                height: 64px;
+                margin-bottom: 16px;
+                opacity: 0.5;
+            }
 
         .connection-status {
             padding: 12px;
@@ -488,16 +498,17 @@
             gap: 8px;
         }
 
-        .connection-status.connected {
-            background: rgba(76, 175, 80, 0.2);
-            color: var(--success);
-        }
+            .connection-status.connected {
+                background: rgba(76, 175, 80, 0.2);
+                color: var(--success);
+            }
 
-        .connection-status.disconnected {
-            background: rgba(244, 67, 54, 0.2);
-            color: var(--error);
-        }
+            .connection-status.disconnected {
+                background: rgba(244, 67, 54, 0.2);
+                color: var(--error);
+            }
     </style>
+    <script src="config.js"></script>
 </head>
 <body>
     <div class="header">
@@ -617,9 +628,9 @@
 
     <script>
         // Configuration - automatically injected by Home Assistant
-        const CONFIG = {
-            haUrl: '{{HA_URL}}',
-            haToken: '{{SUPERVISOR_TOKEN}}'
+        const CONFIG = window.HA_CONFIG || {
+            haUrl: 'http://supervisor/core',
+            haToken: ''
         };
 
         // Initialize
