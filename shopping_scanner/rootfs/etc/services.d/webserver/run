@@ -1,5 +1,24 @@
 #!/usr/bin/with-contenv bashio
 bashio::log.info "Starting Shopping Scanner..."
+
+# Get the Supervisor token and HA URL
+SUPERVISOR_TOKEN="${SUPERVISOR_TOKEN}"
+HA_URL="http://supervisor/core"
+
+bashio::log.info "Configuring Home Assistant connection..."
+bashio::log.info "HA URL: ${HA_URL}"
+
+# Change to web directory
 cd /var/www/html
+
+# Replace placeholders in index.html
+if [ -f "index.html" ]; then
+    sed -i "s|{{SUPERVISOR_TOKEN}}|${SUPERVISOR_TOKEN}|g" index.html
+    sed -i "s|{{HA_URL}}|${HA_URL}|g" index.html
+    bashio::log.info "Configuration injected successfully"
+else
+    bashio::log.error "index.html not found!"
+fi
+
 bashio::log.info "Starting web server on port 8099..."
 exec python3 -m http.server 8099
