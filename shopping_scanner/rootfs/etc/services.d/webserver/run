@@ -9,15 +9,16 @@ else
     bashio::log.info "SUPERVISOR_TOKEN is available (length: ${#SUPERVISOR_TOKEN})"
 fi
 
-# Create config.js with ingress-compatible URL
+# Create config.js - try using the Ingress API endpoint
 cat > config.js << EOF
 window.HA_CONFIG = {
-    haUrl: '/api',
+    haUrl: '../api/hassio_ingress',
     haToken: '${SUPERVISOR_TOKEN}'
 };
 EOF
 
-bashio::log.info "Configuration written to config.js with haUrl: /api"
+bashio::log.info "Configuration written to config.js"
+bashio::log.info "Using Ingress API endpoint"
 
 if [ -f "config.js" ]; then
     bashio::log.info "config.js created successfully"
