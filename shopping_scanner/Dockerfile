@@ -7,5 +7,5 @@ EXPOSE 8099
 LABEL io.hass.name="Shopping Scanner" \
     io.hass.description="Barcode scanner for shopping lists" \
     io.hass.type="addon" \
-    io.hass.version="1.0.3" \
+    io.hass.version="1.0.4" \
     maintainer="Simon Weaver <simon@nrg-music.co.uk>"
