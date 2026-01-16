@@ -3,14 +3,13 @@ bashio::log.info "Starting Shopping Scanner..."
 
 cd /var/www/html
 
-# Check if SUPERVISOR_TOKEN exists
 if [ -z "${SUPERVISOR_TOKEN}" ]; then
     bashio::log.error "SUPERVISOR_TOKEN is not set!"
 else
     bashio::log.info "SUPERVISOR_TOKEN is available (length: ${#SUPERVISOR_TOKEN})"
 fi
 
-# Create config.js with ingress-compatible settings
+# Create config.js with ingress-compatible URL
 cat > config.js << EOF
 window.HA_CONFIG = {
     haUrl: '/api',
@@ -18,7 +17,7 @@ window.HA_CONFIG = {
 };
 EOF
 
-bashio::log.info "Configuration written to config.js"
+bashio::log.info "Configuration written to config.js with haUrl: /api"
 
 if [ -f "config.js" ]; then
     bashio::log.info "config.js created successfully"
