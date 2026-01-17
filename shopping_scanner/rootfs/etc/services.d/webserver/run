@@ -5,6 +5,7 @@ cd /var/www/html
 
 if [ -z "${SUPERVISOR_TOKEN}" ]; then
     bashio::log.error "SUPERVISOR_TOKEN is not set!"
+    exit 1
 else
     bashio::log.info "SUPERVISOR_TOKEN is available (length: ${#SUPERVISOR_TOKEN})"
 fi
@@ -39,14 +40,11 @@ EOF
 
 bashio::log.info "Configuration written to config.js with smart URL detection"
 
-# Debug: show first line of config to verify token injection (without showing actual token)
-TOKEN_LENGTH=\
-bashio::log.info "Token field length in config.js: \ chars"
-
 if [ -f "config.js" ]; then
     bashio::log.info "config.js created successfully"
 else
     bashio::log.error "Failed to create config.js"
+    exit 1
 fi
 
 bashio::log.info "Starting web server on port 8099..."
