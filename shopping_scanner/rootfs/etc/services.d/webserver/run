@@ -10,7 +10,7 @@ else
     bashio::log.info "SUPERVISOR_TOKEN is available (length: ${#SUPERVISOR_TOKEN})"
 fi
 
-# Create config.js with smart URL detection - inject token directly
+# Create config.js with smart URL detection
 cat > config.js << EOF
 (function() {
     const isIngress = window.location.pathname.includes('/api/hassio_ingress/');
@@ -31,18 +31,31 @@ cat > config.js << EOF
         haToken: '${SUPERVISOR_TOKEN}'
     };
     
-    console.log('Shopping Scanner initialized');
+    // Log for debugging
+    console.log('=== Shopping Scanner Config ===');
+    console.log('Location:', window.location.href);
+    console.log('Pathname:', window.location.pathname);
+    console.log('Hostname:', window.location.hostname);
+    console.log('isIngress:', isIngress);
+    console.log('isLocal:', isLocal);
     console.log('API URL:', apiUrl);
+    console.log('Token exists:', !!window.HA_CONFIG.haToken);
     console.log('Token length:', window.HA_CONFIG.haToken.length);
-    console.log('Context:', { isIngress: isIngress, isLocal: isLocal });
+    
+    // Test the connection immediately
+    fetch(apiUrl + '/')
+        .then(r => {
+            console.log('Connection test status:', r.status);
+            return r.json();
+        })
+        .then(data => console.log('Connection test successful:', data))
+        .catch(err => console.error('Connection test failed:', err));
 })();
 EOF
 
-bashio::log.info "Configuration written to config.js with smart URL detection"
+bashio::log.info "Configuration written with enhanced debugging"
 
-if [ -f "config.js" ]; then
-    bashio::log.info "config.js created successfully"
-else
+if [ ! -f "config.js" ]; then
     bashio::log.error "Failed to create config.js"
     exit 1
 fi
