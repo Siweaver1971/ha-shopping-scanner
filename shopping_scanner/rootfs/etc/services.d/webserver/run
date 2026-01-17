@@ -9,16 +9,45 @@ else
     bashio::log.info "SUPERVISOR_TOKEN is available (length: ${#SUPERVISOR_TOKEN})"
 fi
 
-# Create config.js - try using the Ingress API endpoint
-cat > config.js << EOF
-window.HA_CONFIG = {
-    haUrl: '../api/hassio_ingress',
-    haToken: '${SUPERVISOR_TOKEN}'
-};
-EOF
+# Create config.js with smart URL detection
+cat > config.js << 'JSEOF'
+(function() {
+    // Check if we're in an ingress context (inside HA) or remote (companion app)
+    const isIngress = window.location.pathname.includes('/api/hassio_ingress/');
+    const isLocal = window.location.hostname.includes('homeassistant.local') || 
+                    window.location.hostname.match(/^192\.168\./) ||
+                    window.location.hostname.match(/^10\./) ||
+                    window.location.hostname === 'localhost';
+    
+    // Determine the API URL based on context
+    let apiUrl;
+    if (isIngress || isLocal) {
+        // We're inside Home Assistant or on local network - use relative API
+        apiUrl = '/api';
+    } else {
+        // We're accessing remotely via Nabu Casa or external URL
+        // Use the current origin as the API base
+        apiUrl = window.location.origin + '/api';
+    }
+    
+    window.HA_CONFIG = {
+        haUrl: apiUrl,
+        haToken: 'SUPERVISOR_TOKEN_PLACEHOLDER'
+    };
+    
+    console.log('Shopping Scanner Config:', {
+        isIngress: isIngress,
+        isLocal: isLocal,
+        apiUrl: apiUrl,
+        tokenLength: window.HA_CONFIG.haToken.length
+    });
+})();
+JSEOF
 
-bashio::log.info "Configuration written to config.js"
-bashio::log.info "Using Ingress API endpoint"
+# Now replace the token placeholder with the actual token
+sed -i "s|SUPERVISOR_TOKEN_PLACEHOLDER|${SUPERVISOR_TOKEN}|g" config.js
+
+bashio::log.info "Configuration written to config.js with smart URL detection"
 
 if [ -f "config.js" ]; then
     bashio::log.info "config.js created successfully"
