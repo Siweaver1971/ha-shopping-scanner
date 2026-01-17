@@ -5,13 +5,14 @@ cd /var/www/html
 
 bashio::log.info "Configuring for Ingress authentication"
 
-# Create config.js - ingress uses cookies, not tokens
+# Create config.js - haUrl should be empty since we're using relative paths
 cat > config.js << EOF
 window.HA_CONFIG = {
-    haUrl: '/api',
+    haUrl: '', // Empty - relative URLs work in ingress
     haToken: '' // Empty - ingress uses session cookies
 };
 console.log('Shopping Scanner: Using ingress session authentication');
+console.log('Base URL: (relative paths)');
 EOF
 
 bashio::log.info "Configuration written"
