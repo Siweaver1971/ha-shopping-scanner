@@ -268,7 +268,7 @@
             }
 
                 .checkbox.checked::after {
-                    content: '✓';
+                    content: 'âœ“';
                     position: absolute;
                     top: 50%;
                     left: 50%;
@@ -669,8 +669,8 @@
             try {
                 const response = await fetch(`${CONFIG.haUrl}/api/`, {
                     headers: {
-                        'Authorization': `Bearer ${CONFIG.haToken}`
-                    }
+                'Content-Type': 'application/json'
+            }
                 });
                 
                 const statusEl = document.getElementById('connection-status');
@@ -804,9 +804,8 @@
                 const response = await fetch(`${CONFIG.haUrl}/api/services/todo/add_item`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${CONFIG.haToken}`,
-                        'Content-Type': 'application/json'
-                    },
+                'Content-Type': 'application/json'
+            },
                     body: JSON.stringify({
                         entity_id: 'todo.shopping_list',
                         item: productName
@@ -832,8 +831,8 @@
             try {
                 const response = await fetch(`${CONFIG.haUrl}/api/states/todo.shopping_list`, {
                     headers: {
-                        'Authorization': `Bearer ${CONFIG.haToken}`
-                    }
+                'Content-Type': 'application/json'
+            }
                 });
 
                 if (!response.ok) throw new Error('Failed to fetch list');
@@ -843,8 +842,8 @@
                 // Get the actual items
                 const itemsResponse = await fetch(`${CONFIG.haUrl}/api/todo/todo.shopping_list`, {
                     headers: {
-                        'Authorization': `Bearer ${CONFIG.haToken}`
-                    }
+                'Content-Type': 'application/json'
+            }
                 });
 
                 if (!itemsResponse.ok) throw new Error('Failed to fetch items');
@@ -900,9 +899,8 @@
                 const response = await fetch(`${CONFIG.haUrl}/api/services/todo/update_item`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${CONFIG.haToken}`,
-                        'Content-Type': 'application/json'
-                    },
+                'Content-Type': 'application/json'
+            },
                     body: JSON.stringify({
                         entity_id: 'todo.shopping_list',
                         item: uid,

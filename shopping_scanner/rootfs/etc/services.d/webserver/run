@@ -3,57 +3,18 @@ bashio::log.info "Starting Shopping Scanner..."
 
 cd /var/www/html
 
-if [ -z "${SUPERVISOR_TOKEN}" ]; then
-    bashio::log.error "SUPERVISOR_TOKEN is not set!"
-    exit 1
-else
-    bashio::log.info "SUPERVISOR_TOKEN is available (length: ${#SUPERVISOR_TOKEN})"
-fi
+bashio::log.info "Configuring for Ingress authentication"
 
-# Create config.js with smart URL detection
+# Create config.js - ingress uses cookies, not tokens
 cat > config.js << EOF
-(function() {
-    const isIngress = window.location.pathname.includes('/api/hassio_ingress/');
-    const isLocal = window.location.hostname.includes('homeassistant.local') || 
-                    window.location.hostname.match(/^192\.168\./) ||
-                    window.location.hostname.match(/^10\./) ||
-                    window.location.hostname === 'localhost';
-    
-    let apiUrl;
-    if (isIngress || isLocal) {
-        apiUrl = '/api';
-    } else {
-        apiUrl = window.location.origin + '/api';
-    }
-    
-    window.HA_CONFIG = {
-        haUrl: apiUrl,
-        haToken: '${SUPERVISOR_TOKEN}'
-    };
-    
-    // Log for debugging
-    console.log('=== Shopping Scanner Config ===');
-    console.log('Location:', window.location.href);
-    console.log('Pathname:', window.location.pathname);
-    console.log('Hostname:', window.location.hostname);
-    console.log('isIngress:', isIngress);
-    console.log('isLocal:', isLocal);
-    console.log('API URL:', apiUrl);
-    console.log('Token exists:', !!window.HA_CONFIG.haToken);
-    console.log('Token length:', window.HA_CONFIG.haToken.length);
-    
-    // Test the connection immediately
-    fetch(apiUrl + '/')
-        .then(r => {
-            console.log('Connection test status:', r.status);
-            return r.json();
-        })
-        .then(data => console.log('Connection test successful:', data))
-        .catch(err => console.error('Connection test failed:', err));
-})();
+window.HA_CONFIG = {
+    haUrl: '/api',
+    haToken: '' // Empty - ingress uses session cookies
+};
+console.log('Shopping Scanner: Using ingress session authentication');
 EOF
 
-bashio::log.info "Configuration written with enhanced debugging"
+bashio::log.info "Configuration written"
 
 if [ ! -f "config.js" ]; then
     bashio::log.error "Failed to create config.js"
