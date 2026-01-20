@@ -5,29 +5,39 @@ cd /var/www/html
 
 bashio::log.info "Configuring for Ingress authentication"
 
-# Create config.js
+# Create config.js that constructs the correct API URL
 cat > config.js << EOF
-window.HA_CONFIG = {
-    haUrl: '',
-    haToken: ''
-};
-console.log('Shopping Scanner: Using ingress session authentication');
-
-// Test with a valid endpoint
-fetch('/api/config')
-    .then(r => {
-        console.log('Connection test status:', r.status);
-        if (r.ok) {
-            console.log('✓ Connected to Home Assistant');
-            return r.json();
-        }
-        throw new Error('HTTP ' + r.status);
-    })
-    .then(data => console.log('HA Instance:', data.location_name))
-    .catch(err => console.error('Connection test failed:', err));
+(function() {
+    // Extract the base URL (everything before /hassio/ingress/)
+    const currentUrl = window.location.href;
+    const baseUrl = currentUrl.split('/hassio/ingress/')[0];
+    
+    window.HA_CONFIG = {
+        haUrl: baseUrl,  // Will be https://bdna7sfnwdzzpne2opcrkugq9fowrqdw.ui.nabu.casa
+        haToken: ''      // Empty - ingress handles auth via session
+    };
+    
+    console.log('Shopping Scanner Configuration:');
+    console.log('Current URL:', currentUrl);
+    console.log('Base URL:', baseUrl);
+    console.log('API URL:', baseUrl + '/api');
+    
+    // Test connection
+    fetch(baseUrl + '/api/config')
+        .then(r => {
+            console.log('Connection test status:', r.status);
+            if (r.ok) {
+                console.log('✓ Connected to Home Assistant');
+                return r.json();
+            }
+            throw new Error('HTTP ' + r.status);
+        })
+        .then(data => console.log('HA Location:', data.location_name))
+        .catch(err => console.error('Connection test failed:', err));
+})();
 EOF
 
-bashio::log.info "Configuration written"
+bashio::log.info "Configuration written with dynamic URL detection"
 
 if [ ! -f "config.js" ]; then
     bashio::log.error "Failed to create config.js"
