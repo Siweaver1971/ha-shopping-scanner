@@ -5,14 +5,26 @@ cd /var/www/html
 
 bashio::log.info "Configuring for Ingress authentication"
 
-# Create config.js - haUrl should be empty since we're using relative paths
+# Create config.js
 cat > config.js << EOF
 window.HA_CONFIG = {
-    haUrl: '', // Empty - relative URLs work in ingress
-    haToken: '' // Empty - ingress uses session cookies
+    haUrl: '',
+    haToken: ''
 };
 console.log('Shopping Scanner: Using ingress session authentication');
-console.log('Base URL: (relative paths)');
+
+// Test with a valid endpoint
+fetch('/api/config')
+    .then(r => {
+        console.log('Connection test status:', r.status);
+        if (r.ok) {
+            console.log('✓ Connected to Home Assistant');
+            return r.json();
+        }
+        throw new Error('HTTP ' + r.status);
+    })
+    .then(data => console.log('HA Instance:', data.location_name))
+    .catch(err => console.error('Connection test failed:', err));
 EOF
 
 bashio::log.info "Configuration written"
