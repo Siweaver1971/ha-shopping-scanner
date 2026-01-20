@@ -5,21 +5,19 @@ cd /var/www/html
 
 bashio::log.info "Configuring for Ingress authentication"
 
-# Create config.js that constructs the correct API URL
+# Create config.js with correct URL extraction
 cat > config.js << EOF
 (function() {
-    // Extract the base URL (everything before /hassio/ingress/)
-    const currentUrl = window.location.href;
-    const baseUrl = currentUrl.split('/hassio/ingress/')[0];
+    // Get the origin (https://bdna7sfnwdzzpne2opcrkugq9fowrqdw.ui.nabu.casa)
+    const baseUrl = window.location.origin;
     
     window.HA_CONFIG = {
-        haUrl: baseUrl,  // Will be https://bdna7sfnwdzzpne2opcrkugq9fowrqdw.ui.nabu.casa
-        haToken: ''      // Empty - ingress handles auth via session
+        haUrl: baseUrl,  // https://bdna7sfnwdzzpne2opcrkugq9fowrqdw.ui.nabu.casa
+        haToken: ''
     };
     
     console.log('Shopping Scanner Configuration:');
-    console.log('Current URL:', currentUrl);
-    console.log('Base URL:', baseUrl);
+    console.log('Origin:', baseUrl);
     console.log('API URL:', baseUrl + '/api');
     
     // Test connection
@@ -37,7 +35,7 @@ cat > config.js << EOF
 })();
 EOF
 
-bashio::log.info "Configuration written with dynamic URL detection"
+bashio::log.info "Configuration written using window.location.origin"
 
 if [ ! -f "config.js" ]; then
     bashio::log.error "Failed to create config.js"
