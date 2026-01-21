@@ -8,6 +8,11 @@ from urllib.error import HTTPError, URLError
 SUPERVISOR_TOKEN = os.environ.get('SUPERVISOR_TOKEN', '')
 HA_URL = 'http://supervisor/core'
 
+# Debug token at startup
+print(f'[DEBUG] SUPERVISOR_TOKEN available: {bool(SUPERVISOR_TOKEN)}')
+print(f'[DEBUG] Token length: {len(SUPERVISOR_TOKEN) if SUPERVISOR_TOKEN else 0}')
+if SUPERVISOR_TOKEN:
+    print(f'[DEBUG] Token starts with: {SUPERVISOR_TOKEN[:30]}...')
 class ProxyHandler(SimpleHTTPRequestHandler):
     
     def do_GET(self):
@@ -67,6 +72,9 @@ class ProxyHandler(SimpleHTTPRequestHandler):
                 'Authorization': f'Bearer {SUPERVISOR_TOKEN}',
                 'Content-Type': 'application/json'
             }
+            self.log_message(f'[PROXY] Token present: {bool(SUPERVISOR_TOKEN)}')
+            self.log_message(f'[PROXY] Token length: {len(SUPERVISOR_TOKEN) if SUPERVISOR_TOKEN else 0}')
+            self.log_message(f'[PROXY] Token preview: {SUPERVISOR_TOKEN[:20] if SUPERVISOR_TOKEN else "NONE"}...')
             
             req = Request(full_url, data=body, headers=headers, method=method)
             
