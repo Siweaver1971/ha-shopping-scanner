@@ -11,16 +11,26 @@ HA_URL = 'http://supervisor/core'
 class ProxyHandler(SimpleHTTPRequestHandler):
     
     def do_GET(self):
+        # Log ALL GET requests with full details
+        self.log_message(f'[REQUEST] GET {self.path}')
+        self.log_message(f'[HEADERS] {dict(self.headers)}')
+        self.log_message(f'[CLIENT] {self.client_address}')
+    
         # If it's an API call, proxy it
         if self.path.startswith('/api/'):
-            self.proxy_request('GET')
+            self.log_message(f'[PROXY] Matched /api/ pattern - proxying')
         # Otherwise serve static files normally
         else:
             super().do_GET()
     
     def do_POST(self):
+        # Log ALL POST requests
+        self.log_message(f'[REQUEST] POST {self.path}')
+        self.log_message(f'[HEADERS] {dict(self.headers)}')
+        self.log_message(f'[CLIENT] {self.client_address}')
+    
         if self.path.startswith('/api/'):
-            self.proxy_request('POST')
+            self.log_message(f'[PROXY] Matched /api/ pattern - proxying')
         else:
             self.send_error(405, 'Method Not Allowed')
     
