@@ -6,7 +6,7 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 
 SUPERVISOR_TOKEN = os.environ.get('SUPERVISOR_TOKEN', '')
-HA_URL = 'http://supervisor/core'
+HA_URL = 'http://supervisor'
 
 class ProxyHandler(SimpleHTTPRequestHandler):
     
