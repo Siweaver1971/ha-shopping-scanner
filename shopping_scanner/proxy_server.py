@@ -15,12 +15,17 @@ class ProxyHandler(SimpleHTTPRequestHandler):
         self.log_message(f'[REQUEST] GET {self.path}')
         self.log_message(f'[HEADERS] {dict(self.headers)}')
         self.log_message(f'[CLIENT] {self.client_address}')
-    
-        # If it's an API call, proxy it
-        if self.path.startswith('/api/'):
-            self.log_message(f'[PROXY] Matched /api/ pattern - proxying')
+        
+        # Handle ingress paths like /api/hassio_ingress/.../api/states
+        if '/api/' in self.path:
+            # Extract the /api/... part (use rfind to get the last occurrence)
+            api_index = self.path.rfind('/api/')
+            actual_api_path = self.path[api_index:]
+            self.log_message(f'[PROXY] Matched /api/ pattern - proxying: {actual_api_path}')
+            self.proxy_request('GET', actual_api_path)
         # Otherwise serve static files normally
         else:
+            self.log_message(f'[STATIC] Serving static file')
             super().do_GET()
     
     def do_POST(self):
@@ -28,9 +33,13 @@ class ProxyHandler(SimpleHTTPRequestHandler):
         self.log_message(f'[REQUEST] POST {self.path}')
         self.log_message(f'[HEADERS] {dict(self.headers)}')
         self.log_message(f'[CLIENT] {self.client_address}')
-    
-        if self.path.startswith('/api/'):
-            self.log_message(f'[PROXY] Matched /api/ pattern - proxying')
+        
+        # Handle ingress paths
+        if '/api/' in self.path:
+            api_index = self.path.rfind('/api/')
+            actual_api_path = self.path[api_index:]
+            self.log_message(f'[PROXY] Matched /api/ pattern - proxying: {actual_api_path}')
+            self.proxy_request('POST', actual_api_path)
         else:
             self.send_error(405, 'Method Not Allowed')
     
@@ -41,12 +50,15 @@ class ProxyHandler(SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
     
-    def proxy_request(self, method):
+    def proxy_request(self, method, api_path=None):
         try:
-            api_path = self.path
+            # Use provided api_path or fall back to self.path
+            if api_path is None:
+                api_path = self.path
+                
             full_url = f'{HA_URL}{api_path}'
             
-            self.log_message(f'[PROXY] {method} {api_path}')
+            self.log_message(f'[PROXY] {method} {api_path} -> {full_url}')
             
             content_length = int(self.headers.get('Content-Length', 0))
             body = self.rfile.read(content_length) if content_length > 0 else None
