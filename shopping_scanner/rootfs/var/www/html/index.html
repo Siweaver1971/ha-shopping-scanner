@@ -824,16 +824,41 @@
         }
 
         // Get shopping list from HA
-        async function refreshShoppingList() {
-            const listDiv = document.getElementById('shopping-list');
-            listDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading...</p></div>';
+async function refreshShoppingList() {
+    const listDiv = document.getElementById('shopping-list');
+    listDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading...</p></div>';
 
-            try {
-                const response = await fetch(`${CONFIG.haUrl}/api/states/todo.shopping_list`, {
-                    headers: {
+    try {
+        const response = await fetch(`${CONFIG.haUrl}/api/states/todo.shopping_list`, {
+            headers: {
                 'Content-Type': 'application/json'
             }
-                });
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch list');
+
+        const data = await response.json();
+        
+        // The items are in the attributes.todo_list array
+        const items = data.attributes?.todo_list || [];
+        
+        displayShoppingList(items);
+    } catch (err) {
+        console.error(err);
+        listDiv.innerHTML = `
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+                <p>Could not load shopping list</p>
+                <p style="font-size: 12px; margin-top: 8px;">Check your connection</p>
+            </div>
+        `;
+    }
+}
+
 
                 if (!response.ok) throw new Error('Failed to fetch list');
 
