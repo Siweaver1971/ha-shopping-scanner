@@ -6,7 +6,7 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 
 SUPERVISOR_TOKEN = os.environ.get('SUPERVISOR_TOKEN', '')
-HA_URL = 'http://supervisor'
+HA_URL = 'http://supervisor/core'
 
 class ProxyHandler(SimpleHTTPRequestHandler):
     
@@ -83,11 +83,13 @@ class ProxyHandler(SimpleHTTPRequestHandler):
                 
         except HTTPError as e:
             self.log_message(f'[PROXY] HTTP Error {e.code}')
+            error_body = e.read()
+            self.log_message(f'[PROXY] Error response: {error_body.decode("utf-8", errors="ignore")}')
             self.send_response(e.code)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
-            self.wfile.write(e.read())
+            self.wfile.write(error_body)
             
         except Exception as e:
             self.log_message(f'[PROXY] Error: {str(e)}')
