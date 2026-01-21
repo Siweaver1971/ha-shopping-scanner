@@ -1,46 +1,13 @@
 #!/usr/bin/with-contenv bashio
-bashio::log.info "Starting Shopping Scanner..."
+bashio::log.info "Starting Shopping Scanner with API Proxy..."
 
-cd /var/www/html
-
-bashio::log.info "Configuring for Ingress authentication"
-
-# Create config.js with correct URL extraction
-cat > config.js << EOF
-(function() {
-    // Get the origin (https://bdna7sfnwdzzpne2opcrkugq9fowrqdw.ui.nabu.casa)
-    const baseUrl = window.location.origin;
-    
-    window.HA_CONFIG = {
-        haUrl: baseUrl,  // https://bdna7sfnwdzzpne2opcrkugq9fowrqdw.ui.nabu.casa
-        haToken: ''
-    };
-    
-    console.log('Shopping Scanner Configuration:');
-    console.log('Origin:', baseUrl);
-    console.log('API URL:', baseUrl + '/api');
-    
-    // Test connection
-    fetch(baseUrl + '/api/config')
-        .then(r => {
-            console.log('Connection test status:', r.status);
-            if (r.ok) {
-                console.log('✓ Connected to Home Assistant');
-                return r.json();
-            }
-            throw new Error('HTTP ' + r.status);
-        })
-        .then(data => console.log('HA Location:', data.location_name))
-        .catch(err => console.error('Connection test failed:', err));
-})();
-EOF
-
-bashio::log.info "Configuration written using window.location.origin"
-
-if [ ! -f "config.js" ]; then
-    bashio::log.error "Failed to create config.js"
+if [ -z "${SUPERVISOR_TOKEN}" ]; then
+    bashio::log.error "SUPERVISOR_TOKEN is not set!"
     exit 1
 fi
 
-bashio::log.info "Starting web server on port 8099..."
-exec python3 -m http.server 8099
+bashio::log.info "Supervisor token available"
+bashio::log.info "Starting proxy server..."
+
+cd /var/www/html
+exec python3 /proxy_server.py
