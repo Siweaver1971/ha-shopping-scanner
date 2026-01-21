@@ -9,20 +9,12 @@ SUPERVISOR_TOKEN = os.environ.get('SUPERVISOR_TOKEN', '')
 HA_URL = 'http://supervisor/core'
 
 class ProxyHandler(SimpleHTTPRequestHandler):
-    def end_headers(self):
-        # Add CORS headers
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        super().end_headers()
-    
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.end_headers()
     
     def do_GET(self):
+        # If it's an API call, proxy it
         if self.path.startswith('/api/'):
             self.proxy_request('GET')
+        # Otherwise serve static files normally
         else:
             super().do_GET()
     
@@ -30,21 +22,25 @@ class ProxyHandler(SimpleHTTPRequestHandler):
         if self.path.startswith('/api/'):
             self.proxy_request('POST')
         else:
-            self.send_error(405)
+            self.send_error(405, 'Method Not Allowed')
+    
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
     
     def proxy_request(self, method):
         try:
-            # Construct the full HA URL
-            api_path = self.path  # e.g., /api/states/todo.shopping_list
+            api_path = self.path
             full_url = f'{HA_URL}{api_path}'
             
-            print(f'[PROXY] {method} {api_path} -> {full_url}')
+            self.log_message(f'[PROXY] {method} {api_path}')
             
-            # Read request body for POST
             content_length = int(self.headers.get('Content-Length', 0))
             body = self.rfile.read(content_length) if content_length > 0 else None
             
-            # Make request to HA with Supervisor token
             headers = {
                 'Authorization': f'Bearer {SUPERVISOR_TOKEN}',
                 'Content-Type': 'application/json'
@@ -57,34 +53,31 @@ class ProxyHandler(SimpleHTTPRequestHandler):
                 
                 self.send_response(response.status)
                 self.send_header('Content-Type', response.headers.get('Content-Type', 'application/json'))
+                self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(response_data)
                 
-                print(f'[PROXY] Response: {response.status}')
+                self.log_message(f'[PROXY] -> {response.status}')
                 
         except HTTPError as e:
-            print(f'[PROXY] HTTP Error: {e.code} {e.reason}')
-            error_body = e.read()
+            self.log_message(f'[PROXY] HTTP Error {e.code}')
             self.send_response(e.code)
             self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
-            self.wfile.write(error_body)
-            
-        except URLError as e:
-            print(f'[PROXY] URL Error: {e.reason}')
-            self.send_error(502, f'Bad Gateway: {str(e.reason)}')
+            self.wfile.write(e.read())
             
         except Exception as e:
-            print(f'[PROXY] Error: {str(e)}')
+            self.log_message(f'[PROXY] Error: {str(e)}')
             self.send_error(500, str(e))
-    
-    def log_message(self, format, *args):
-        # Suppress default logging (we print our own)
-        return
 
 if __name__ == '__main__':
     os.chdir('/var/www/html')
-    print(f'Starting proxy server on port 8099...')
-    print(f'Supervisor token: {"present" if SUPERVISOR_TOKEN else "missing"}')
+    if not SUPERVISOR_TOKEN:
+        print('ERROR: SUPERVISOR_TOKEN not set!')
+        exit(1)
+    print(f'Starting Shopping Scanner proxy server on port 8099')
+    print(f'Serving files from: /var/www/html')
+    print(f'Proxying API calls to: {HA_URL}')
     server = HTTPServer(('0.0.0.0', 8099), ProxyHandler)
     server.serve_forever()
