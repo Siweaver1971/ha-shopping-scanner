@@ -11,6 +11,7 @@ boot: auto
 init: false
 ingress: true
 ingress_port: 8099
+homeassistant_api: true
 panel_icon: mdi:barcode-scan
 panel_title: Shopping Scanner
 options:
