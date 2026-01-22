@@ -108,8 +108,23 @@ if __name__ == '__main__':
     if not SUPERVISOR_TOKEN:
         print('ERROR: SUPERVISOR_TOKEN not set!')
         exit(1)
-    print(f'Starting Shopping Scanner proxy server on port 8099')
-    print(f'Serving files from: /var/www/html')
-    print(f'Proxying API calls to: {HA_URL}')
-    server = HTTPServer(('0.0.0.0', 8099), ProxyHandler)
-    server.serve_forever()
+    
+    # Check for SSL
+    ssl_cert = '/ssl/fullchain.pem'
+    ssl_key = '/ssl/privkey.pem'
+    use_ssl = os.path.exists(ssl_cert) and os.path.exists(ssl_key)
+    
+    if use_ssl:
+        import ssl
+        print(f'Starting Shopping Scanner HTTPS proxy server on port 8099')
+        server = HTTPServer(('0.0.0.0', 8099), ProxyHandler)
+        server.socket = ssl.wrap_socket(server.socket,
+                                       certfile=ssl_cert,
+                                       keyfile=ssl_key,
+                                       server_side=True)
+        server.serve_forever()
+    else:
+        print(f'Starting Shopping Scanner HTTP proxy server on port 8099')
+        print(f'WARNING: Camera may not work without HTTPS!')
+        server = HTTPServer(('0.0.0.0', 8099), ProxyHandler)
+        server.serve_forever()
