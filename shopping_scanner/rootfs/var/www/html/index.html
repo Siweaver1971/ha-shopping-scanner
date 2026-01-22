@@ -629,7 +629,7 @@
     <script>
         // Configuration - automatically injected by Home Assistant
         const CONFIG = window.HA_CONFIG || {
-            haUrl: 'http://supervisor/core',
+            haUrl: '',
             haToken: ''
         };
 
@@ -667,7 +667,7 @@
         // Check Home Assistant connection
         async function checkConnection() {
             try {
-                const response = await fetch(`${CONFIG.haUrl}/api/`, {
+                const response = await fetch(`/api/`, {
                     headers: {
                 'Content-Type': 'application/json'
             }
@@ -801,7 +801,7 @@
         // Add product to HA shopping list
         async function addToShoppingList(productName) {
             try {
-                const response = await fetch(`${CONFIG.haUrl}/api/services/todo/add_item`, {
+                const response = await fetch(`/api/services/todo/add_item`, {
                     method: 'POST',
                     headers: {
                 'Content-Type': 'application/json'
@@ -830,7 +830,7 @@
             listDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading...</p></div>';
 
             try {
-                const response = await fetch(`${CONFIG.haUrl}/api/states/todo.shopping_list`, {
+                const response = await fetch(`/api/states/todo.shopping_list`, {
                     headers: {
                         'Content-Type': 'application/json'
                     }
@@ -896,7 +896,7 @@
             const newStatus = currentStatus === 'completed' ? 'needs_action' : 'completed';
             
             try {
-                const response = await fetch(`${CONFIG.haUrl}/api/services/todo/update_item`, {
+                const response = await fetch(`/api/services/todo/update_item`, {
                     method: 'POST',
                     headers: {
                 'Content-Type': 'application/json'
